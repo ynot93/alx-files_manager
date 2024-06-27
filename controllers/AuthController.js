@@ -1,7 +1,7 @@
-import sha1 from 'sha1';
-import { v4 as uuidv4 } from 'uuid';
-import redisClient from '../utils/redis';
-import dbClient from '../utils/db';
+const sha1 = require('sha1');
+const { v4: uuidv4 } = require('uuid');
+const redisClient = require('../utils/redis');
+const dbClient = require('../utils/db');
 
 class AuthController {
   static async getConnect(req, res) {

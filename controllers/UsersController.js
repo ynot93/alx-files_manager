@@ -1,5 +1,5 @@
-import redisClient from '../utils/redis';
-import dbClient from '../utils/db';
+const redisClient = require('../utils/redis');
+const dbClient = require('../utils/db');
 
 class UsersController {
   static async postNew(req, res) {
@@ -53,4 +53,4 @@ class UsersController {
   }
 }
 
-export default UsersController;
+module.exports = UsersController;

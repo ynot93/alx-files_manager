@@ -1,4 +1,4 @@
-import { MongoClient } from 'mongodb';
+const { MongoClient } = require('mongodb');
 
 class DBClient {
   constructor() {
@@ -18,30 +18,24 @@ class DBClient {
       });
   }
 
-  /**
-   * Checks if the MongoDB client is connected.
-   * @returns {boolean} True if the client is connected, otherwise false.
-   */
+  // Checks if the MongoDB client is connected.
+  // @returns {boolean} True if the client is connected, otherwise false.
   isAlive() {
     return this.client.isConnected();
   }
 
-  /**
-   * Returns the number of documents in the 'users' collection.
-   * @returns {Promise<number>} The number of documents in the 'users' collection.
-   */
+  // Returns the number of documents in the 'users' collection.
+  // @returns {Promise<number>} The number of documents in the 'users' collection.
   async nbUsers() {
     return this.db.collection('users').countDocuments();
   }
 
-  /**
-   * Returns the number of documents in the 'files' collection.
-   * @returns {Promise<number>} The number of documents in the 'files' collection.
-   */
+  // Returns the number of documents in the 'files' collection.
+  // @returns {Promise<number>} The number of documents in the 'files' collection.
   async nbFiles() {
     return this.db.collection('files').countDocuments();
   }
 }
 
 const dbClient = new DBClient();
-export default dbClient;
+module.exports = dbClient;
