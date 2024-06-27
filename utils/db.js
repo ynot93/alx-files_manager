@@ -6,7 +6,7 @@ class DBClient {
     const port = process.env.DB_PORT || 27017;
     const database = process.env.DB_DATABASE || 'files_manager';
     const url = `mongodb://${host}:${port}`;
-    
+
     this.client = new MongoClient(url, { useUnifiedTopology: true });
     this.client.connect()
       .then(() => {
@@ -35,7 +35,18 @@ class DBClient {
   async nbFiles() {
     return this.db.collection('files').countDocuments();
   }
+
+  // Retrieves a reference to the `users` collection.
+  async usersCollection() {
+    return this.client.db().collection('users');
+  }
+
+  // Retrieves a reference to the `files` collection.
+  async filesCollection() {
+    return this.client.db().collection('files');
+  }
 }
 
 const dbClient = new DBClient();
 module.exports = dbClient;
+
