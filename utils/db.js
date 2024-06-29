@@ -7,7 +7,8 @@ class DBClient {
     const database = process.env.DB_DATABASE || 'files_manager';
     const url = `mongodb://${host}:${port}`;
 
-    this.client = new MongoClient(url, { useUnifiedTopology: true });
+    this.client = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true });
+
     this.client.connect()
       .then(() => {
         this.db = this.client.db(database);
@@ -19,34 +20,30 @@ class DBClient {
   }
 
   // Checks if the MongoDB client is connected.
-  // @returns {boolean} True if the client is connected, otherwise false.
   isAlive() {
-    return this.client.isConnected();
+    return this.client.topology.isConnected();
   }
 
   // Returns the number of documents in the 'users' collection.
-  // @returns {Promise<number>} The number of documents in the 'users' collection.
   async nbUsers() {
     return this.db.collection('users').countDocuments();
   }
 
   // Returns the number of documents in the 'files' collection.
-  // @returns {Promise<number>} The number of documents in the 'files' collection.
   async nbFiles() {
     return this.db.collection('files').countDocuments();
   }
 
   // Retrieves a reference to the `users` collection.
   async usersCollection() {
-    return this.client.db().collection('users');
+    return this.db.collection('users');
   }
 
   // Retrieves a reference to the `files` collection.
   async filesCollection() {
-    return this.client.db().collection('files');
+    return this.db.collection('files');
   }
 }
 
 const dbClient = new DBClient();
 module.exports = dbClient;
-
