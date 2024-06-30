@@ -27,7 +27,7 @@ class UsersController {
     const newUser = await dbClient.createUser(email, hashedPassword);
 
     // Respond with the newly created user's email and id
-    res.status(201).json({ id: newUser.insertedId.toString(), email });
+    return res.status(201).json({ id: newUser.insertedId.toString(), email });
   }
 
   static async getMe(req, res) {
