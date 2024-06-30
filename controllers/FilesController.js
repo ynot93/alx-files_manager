@@ -1,5 +1,3 @@
-// controllers/FilesController.js
-
 const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
@@ -18,7 +16,7 @@ class FilesController {
     if (!['folder', 'file', 'image'].includes(type)) {
       return res.status(400).json({ error: 'Missing or invalid type' });
     }
-    if ((type !== 'folder') && !data) {
+    if (type !== 'folder' && !data) {
       return res.status(400).json({ error: 'Missing data' });
     }
 
@@ -54,7 +52,7 @@ class FilesController {
       type,
       isPublic,
       parentId: new ObjectID(parentId),
-      localPath: (type !== 'folder') ? localPath : null
+      localPath: type !== 'folder' ? localPath : null
     };
 
     // Save the new file in MongoDB
@@ -71,7 +69,7 @@ class FilesController {
     });
   }
 
-  static async getShow (req, res) {
+  static async getShow(req, res) {
     try {
       const userId = await retrieveUserIdFromToken(req.headers['x-token']);
       if (!userId) {
@@ -92,8 +90,7 @@ class FilesController {
     }
   }
 
-  // GET /files
-  static async getIndex (req, res) {
+  static async getIndex(req, res) {
     try {
       const userId = await retrieveUserIdFromToken(req.headers['x-token']);
       if (!userId) {
@@ -101,7 +98,7 @@ class FilesController {
       }
 
       const parentId = req.query.parentId || '0';
-      const page = parseInt(req.query.page) || 0;
+      const page = parseInt(req.query.page, 10) || 0;
       const perPage = 20;
       const skip = page * perPage;
 

@@ -1,4 +1,4 @@
-const { MongoClient } = require('mongodb');
+const { MongoClient, ObjectId } = require('mongodb');
 
 class DBClient {
   constructor() {
@@ -44,6 +44,12 @@ class DBClient {
   async createUser(email, hashedPassword) {
     const result = await this.db.collection('users').insertOne({ email, password: hashedPassword });
     return result;
+  }
+
+  // Retrieves a user by email.
+  async getUser(email) {
+    const user = await this.db.collection('users').findOne({ email });
+    return user;
   }
 
   // Retrieves a reference to the `users` collection.
