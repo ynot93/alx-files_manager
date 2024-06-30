@@ -34,6 +34,18 @@ class DBClient {
     return this.db.collection('files').countDocuments();
   }
 
+  // Checks if a user exists by email.
+  async userExist(email) {
+    const user = await this.db.collection('users').findOne({ email });
+    return user !== null;
+  }
+
+  // Creates a new user in the database.
+  async createUser(email, hashedPassword) {
+    const result = await this.db.collection('users').insertOne({ email, password: hashedPassword });
+    return result;
+  }
+
   // Retrieves a reference to the `users` collection.
   async usersCollection() {
     return this.db.collection('users');
