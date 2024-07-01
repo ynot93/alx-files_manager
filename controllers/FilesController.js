@@ -12,7 +12,9 @@ const fileCollection = dbClient.client.db().collection('files');
 async function postUpload(req, resp) {
   const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';
   const token = req.headers['x-token'];
-  const { name, type, data, parentId: rawParentId, isPublic = false } = req.body;
+  const {
+    name, type, data, parentId: rawParentId, isPublic = false,
+  } = req.body;
 
   if (!token) {
     return resp.status(401).json({ error: 'Unauthorized' });
@@ -35,7 +37,7 @@ async function postUpload(req, resp) {
     return resp.status(400).json({ error: 'Missing data' });
   }
 
-  let parentId = rawParentId ? ObjectId(rawParentId) : 0;
+  const parentId = rawParentId ? ObjectId(rawParentId) : 0;
 
   if (rawParentId) {
     const parentFolder = await fileCollection.findOne({ _id: parentId });

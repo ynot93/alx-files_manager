@@ -7,47 +7,38 @@ class AuthController {
   static async getConnect(req, res) {
     const authHeader = req.headers.authorization;
 
-    // Check for the Basic Auth header
     if (!authHeader || !authHeader.startsWith('Basic ')) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // Decode Base64 credentials
     const encodedCredentials = authHeader.substring('Basic '.length);
     const decodedCredentials = Buffer.from(encodedCredentials, 'base64').toString('utf-8');
     const [email, password] = decodedCredentials.split(':');
 
-    // Check if email and password are provided
     if (!email || !password) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // Hash the provided password
     const hashedPassword = sha1(password);
 
     try {
-      // Retrieve the user from the database
       const user = await dbClient.getUser(email);
 
-      // Check if user exists and password matches
       if (!user || user.password !== hashedPassword) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
 
-      // Generate a new token
       const token = uuidv4();
       const key = `auth_${token}`;
 
-      // Store the token in Redis with a 24-hour expiration
-      await redisClient.set(key, user._id.toString(), 86400)  // 24 hours expiration
-        .catch((err) => {
-          console.error('Error setting Redis key:', err);
-          return res.status(500).json({ error: 'Internal Server Error' });
-        });
+      await redisClient.set(key, user._id.toString(), 86400);
 
-      // Return the token
+      // Add logging
+      console.log(`Token stored in Redis: key = ${key}, value = ${user._id.toString()}`);
+
       return res.status(200).json({ token });
     } catch (error) {
+      console.error('Error:', error);
       return res.status(500).json({ error: 'Internal Server Error' });
     }
   }
@@ -55,7 +46,6 @@ class AuthController {
   static async getDisconnect(req, res) {
     const token = req.headers['x-token'];
 
-    // Check if token is provided
     if (!token) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -63,21 +53,16 @@ class AuthController {
     const key = `auth_${token}`;
     try {
       const userId = await redisClient.get(key);
-      
-      // Check if token is valid
+
       if (!userId) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
 
-      // Delete the token from Redis
-      await redisClient.del(key)
-        .catch((err) => {
-          console.error('Error deleting Redis key:', err);
-          return res.status(500).json({ error: 'Internal Server Error' });
-        });
+      await redisClient.del(key);
 
       return res.status(204).send();
     } catch (error) {
+      console.error('Error:', error);
       return res.status(500).json({ error: 'Internal Server Error' });
     }
   }

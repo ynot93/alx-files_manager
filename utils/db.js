@@ -19,45 +19,47 @@ class DBClient {
       });
   }
 
-  // Checks if the MongoDB client is connected.
   isAlive() {
     return this.client.topology.isConnected();
   }
 
-  // Returns the number of documents in the 'users' collection.
   async nbUsers() {
     return this.db.collection('users').countDocuments();
   }
 
-  // Returns the number of documents in the 'files' collection.
   async nbFiles() {
     return this.db.collection('files').countDocuments();
   }
 
-  // Checks if a user exists by email.
   async userExist(email) {
     const user = await this.db.collection('users').findOne({ email });
     return user !== null;
   }
 
-  // Creates a new user in the database.
   async createUser(email, hashedPassword) {
     const result = await this.db.collection('users').insertOne({ email, password: hashedPassword });
     return result;
   }
 
-  // Retrieves a user by email.
   async getUser(email) {
     const user = await this.db.collection('users').findOne({ email });
+    console.log(`getUser: ${email} returned user: ${user}`);
     return user;
   }
 
-  // Retrieves a reference to the `users` collection.
+  async getUserById(id) {
+    const user = await this.db.collection('users').findOne({ _id: new ObjectId(id) });
+
+    // Add logging
+    console.log(`getUserById: ${id} returned user: ${user}`);
+
+    return user;
+  }
+
   async usersCollection() {
     return this.db.collection('users');
   }
 
-  // Retrieves a reference to the `files` collection.
   async filesCollection() {
     return this.db.collection('files');
   }

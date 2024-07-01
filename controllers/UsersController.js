@@ -6,7 +6,6 @@ class UsersController {
   static async postNew(req, res) {
     const { email, password } = req.body;
 
-    // Check if email and password are provided
     if (!email) {
       return res.status(400).json({ error: 'Missing email' });
     }
@@ -14,19 +13,14 @@ class UsersController {
       return res.status(400).json({ error: 'Missing password' });
     }
 
-    // Check if user already exists
     const userExists = await dbClient.userExist(email);
     if (userExists) {
       return res.status(400).json({ error: 'Already exist' });
     }
 
-    // Hash the password using SHA1
     const hashedPassword = sha1(password);
-
-    // Insert the new user into the database
     const newUser = await dbClient.createUser(email, hashedPassword);
 
-    // Respond with the newly created user's email and id
     return res.status(201).json({ id: newUser.insertedId.toString(), email });
   }
 
@@ -39,6 +33,9 @@ class UsersController {
 
     const key = `auth_${token}`;
     const userId = await redisClient.get(key);
+
+    // Add logging
+    console.log(`Token retrieved from Redis: key = ${key}, userId = ${userId}`);
 
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
