@@ -1,6 +1,8 @@
 const sha1 = require('sha1');
 const redisClient = require('../utils/redis');
 const dbClient = require('../utils/db');
+const Bull = require('bull');
+const userQueue = require('../worker');
 
 class UsersController {
   static async postNew(req, res) {
@@ -20,6 +22,9 @@ class UsersController {
 
     const hashedPassword = sha1(password);
     const newUser = await dbClient.createUser(email, hashedPassword);
+
+    // Add job to userQueue for sending welcome email
+    await userQueue.add({ userId: newUser.insertedId });
 
     return res.status(201).json({ id: newUser.insertedId.toString(), email });
   }
