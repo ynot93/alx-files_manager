@@ -1,6 +1,7 @@
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const path = require('path');
+const { ObjectId } = require('mongodb');
 const redisClient = require('../utils/redis');
 const dbClient = require('../utils/db');
 
@@ -66,6 +67,64 @@ class FilesController {
     fileDocument.localPath = localPath;
     const newFile = await dbClient.createFile(fileDocument);
     return res.status(201).json(newFile);
+  }
+
+  static async getShow(req, res) {
+    const token = req.headers['x-token'];
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const key = `auth_${token}`;
+    const userId = await redisClient.get(key);
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const fileId = req.params.id;
+    let file;
+    try {
+      file = await dbClient.getFileById(fileId);
+    } catch (error) {
+      console.error(`Error fetching file from database: ${error}`);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+
+    if (!file || file.userId.toString() !== userId) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+
+    return res.json(file);
+  }
+
+  static async getIndex(req, res) {
+    const token = req.headers['x-token'];
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const key = `auth_${token}`;
+    const userId = await redisClient.get(key);
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { parentId = 0, page = 0 } = req.query;
+    const limit = 20; // Number of items per page
+
+    let files;
+    try {
+      files = await dbClient.filesCollection()
+        .find({ userId: ObjectId(userId), parentId: parentId !== '0' ? ObjectId(parentId) : 0 })
+        .skip(page * limit)
+        .limit(limit)
+        .toArray();
+    } catch (error) {
+      console.error(`Error fetching files from database: ${error}`);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+
+    return res.json(files);
   }
 }
 

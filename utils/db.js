@@ -49,30 +49,25 @@ class DBClient {
 
   async getUserById(id) {
     const user = await this.db.collection('users').findOne({ _id: new ObjectId(id) });
-
-    // Add logging
     console.log(`getUserById: ${id} returned user: ${user}`);
-
     return user;
   }
 
-  // New method to retrieve a file by ID
   async getFileById(id) {
-    const file = await this.db.collection('files').findOne({ _id: ObjectId(id) });
+    const file = await this.db.collection('files').findOne({ _id: new ObjectId(id) });
     return file;
   }
 
-  // New method to create a file in the database
   async createFile(fileDocument) {
     const result = await this.db.collection('files').insertOne(fileDocument);
     return result.ops[0];
   }
 
-  async usersCollection() {
+  usersCollection() {
     return this.db.collection('users');
   }
 
-  async filesCollection() {
+  filesCollection() {
     return this.db.collection('files');
   }
 }
