@@ -126,6 +126,82 @@ class FilesController {
 
     return res.json(files);
   }
+
+  static async putPublish(req, res) {
+    const token = req.headers['x-token'];
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const key = `auth_${token}`;
+    const userId = await redisClient.get(key);
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const fileId = req.params.id;
+    let file;
+    try {
+      file = await dbClient.getFileById(fileId);
+    } catch (error) {
+      console.error(`Error fetching file from database: ${error}`);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+
+    if (!file || file.userId.toString() !== userId) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+
+    try {
+      await dbClient.filesCollection().updateOne(
+        { _id: ObjectId(fileId) },
+        { $set: { isPublic: true } }
+      );
+      file.isPublic = true;
+      return res.json(file);
+    } catch (error) {
+      console.error(`Error updating file in database: ${error}`);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+  }
+
+  static async putUnpublish(req, res) {
+    const token = req.headers['x-token'];
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const key = `auth_${token}`;
+    const userId = await redisClient.get(key);
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const fileId = req.params.id;
+    let file;
+    try {
+      file = await dbClient.getFileById(fileId);
+    } catch (error) {
+      console.error(`Error fetching file from database: ${error}`);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+
+    if (!file || file.userId.toString() !== userId) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+
+    try {
+      await dbClient.filesCollection().updateOne(
+        { _id: ObjectId(fileId) },
+        { $set: { isPublic: false } }
+      );
+      file.isPublic = false;
+      return res.json(file);
+    } catch (error) {
+      console.error(`Error updating file in database: ${error}`);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+  }
 }
 
 module.exports = FilesController;
