@@ -22,7 +22,7 @@ class RedisClient {
     const setAsync = promisify(this.client.set).bind(this.client);
     // Ensure `duration` is an integer
     await setAsync(key, value);
-    await this.client.expire(key, parseInt(duration, 10));  // Ensure duration is an integer
+    await this.client.expire(key, parseInt(duration, 10));
   }
 
   async del(key) {
