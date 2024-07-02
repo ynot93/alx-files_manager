@@ -9,7 +9,7 @@ const { v4: uuidv4 } = require('uuid');
 
 class FilesController {
   static async postUpload(req, res) {
-    const token = req.headers['X-token'];
+    const token = req.headers['x-token'];
     if (!token) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -56,7 +56,7 @@ class FilesController {
 
     if (type === 'folder') {
       const newFile = await dbClient.createFile(fileDocument);
-      return res.status(201).json({{ id: newFile.insertedId, ...fileDocument }});
+      return res.status(201).json({ id: newFile.insertedId, ...fileDocument });
     }
 
     const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';
