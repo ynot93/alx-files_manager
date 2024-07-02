@@ -55,8 +55,8 @@ class FilesController {
     };
 
     if (type === 'folder') {
-      const newFile = await dbClient.createFile(fileDocument);
-      return res.status(201).json({ id: newFile.insertedId, ...fileDocument });
+      const newFile = await dbClient.db.collection('files').insertOne(fileDocument);
+      return res.status(201).json({ ...fileDocument });
     }
 
     const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';
@@ -68,13 +68,13 @@ class FilesController {
     await fs.writeFileSync(localPath, Buffer.from(data, 'base64'));
 
     fileDocument.localPath = localPath;
-    const newFile = await dbClient.createFile(fileDocument);
+    const newFile = await dbClient.db.collection('files').insertOne(fileDocument);
 
     if (type === 'image') {
       await fileQueue.add({ userId, fileId: newFile._id.toString() });
     }
 
-    return res.status(201).json({ id: newFile.insertedId, ...fileDocument });
+    return res.status(201).json({ ...fileDocument });
   }
 
   static async getShow(req, res) {
