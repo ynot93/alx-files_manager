@@ -3,3 +3,6 @@ package*
 .gitignore
 main*
 db/
+logs/
+data/
+dump.rdb
