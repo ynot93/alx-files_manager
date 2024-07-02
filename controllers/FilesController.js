@@ -1,4 +1,4 @@
-const fs = require('fs').promises;
+const fs = require('fs');
 const path = require('path');
 const mime = require('mime-types');
 const { ObjectId } = require('mongodb');
@@ -9,7 +9,7 @@ const { v4: uuidv4 } = require('uuid');
 
 class FilesController {
   static async postUpload(req, res) {
-    const token = req.headers['x-token'];
+    const token = req.headers['X-token'];
     if (!token) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -28,7 +28,7 @@ class FilesController {
       return res.status(400).json({ error: 'Missing name' });
     }
 
-    if (!['folder', 'file', 'image'].includes(type)) {
+    if (!type || !['folder', 'file', 'image'].includes(type)) {
       return res.status(400).json({ error: 'Missing type' });
     }
 
@@ -51,12 +51,12 @@ class FilesController {
       name,
       type,
       isPublic,
-      parentId: parentId !== 0 ? parentId : 0,
+      parentId: parentId !== 0 ? ObjectId(parentId) : 0,
     };
 
     if (type === 'folder') {
       const newFile = await dbClient.createFile(fileDocument);
-      return res.status(201).json(newFile);
+      return res.status(201).json({{ id: newFile.insertedId, ...fileDocument }});
     }
 
     const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';
@@ -65,7 +65,7 @@ class FilesController {
     }
 
     const localPath = path.join(folderPath, uuidv4());
-    await fs.writeFile(localPath, Buffer.from(data, 'base64'));
+    await fs.writeFileSync(localPath, Buffer.from(data, 'base64'));
 
     fileDocument.localPath = localPath;
     const newFile = await dbClient.createFile(fileDocument);
@@ -74,7 +74,7 @@ class FilesController {
       await fileQueue.add({ userId, fileId: newFile._id.toString() });
     }
 
-    return res.status(201).json(newFile);
+    return res.status(201).json({ id: newFile.insertedId, ...fileDocument });
   }
 
   static async getShow(req, res) {
