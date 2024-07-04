@@ -2,7 +2,7 @@ const sha1 = require('sha1');
 const redisClient = require('../utils/redis');
 const dbClient = require('../utils/db');
 const Bull = require('bull');
-const userQueue = require('../worker');
+const userQueue = new Bull('userQueue');
 
 class UsersController {
   static async postNew(req, res) {
@@ -30,7 +30,7 @@ class UsersController {
   }
 
   static async getMe(req, res) {
-    const { 'x-token': token } = req.headers;
+    const token = req.headers['x-token'];
 
     if (!token) {
       return res.status(401).json({ error: 'Unauthorized' });
@@ -38,9 +38,6 @@ class UsersController {
 
     const key = `auth_${token}`;
     const userId = await redisClient.get(key);
-
-    // Add logging
-    console.log(`Token retrieved from Redis: key = ${key}, userId = ${userId}`);
 
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
