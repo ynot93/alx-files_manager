@@ -1,7 +1,8 @@
 const sha1 = require('sha1');
+const Bull = require('bull');
 const redisClient = require('../utils/redis');
 const dbClient = require('../utils/db');
-const Bull = require('bull');
+
 const userQueue = new Bull('userQueue');
 
 class UsersController {
